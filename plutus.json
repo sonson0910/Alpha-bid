@@ -1,0 +1,102 @@
+{
+  "preamble": {
+    "title": "blockalpha/alpha-bid",
+    "description": "Aiken contracts for project 'blockalpha/alpha-bid'",
+    "version": "0.0.0",
+    "plutusVersion": "v2",
+    "compiler": {
+      "name": "Aiken",
+      "version": "v1.0.21-alpha+4b04517"
+    },
+    "license": "Apache-2.0"
+  },
+  "validators": [
+    {
+      "title": "blockalpha.bid",
+      "datum": {
+        "title": "datum",
+        "schema": {
+          "$ref": "#/definitions/blockalpha~1Datum"
+        }
+      },
+      "redeemer": {
+        "title": "_redeemer",
+        "schema": {
+          "$ref": "#/definitions/Void"
+        }
+      },
+      "compiledCode": "59055601000032323232323232323222232533300732323232323232323232323253330133370e90010008a9998098010a51132323232323232323232533301d33301d3322323253330213370e9001000899b89003375a604c603e0042940c07c004c018c074c018c074008c028c06c054dd6981118119811980d80d2504a226464a66603e66e1d20000011323253330215333021337126eb4c038c07c078c024dd59805180f800899baf3008301f4c129d8799fd8799f581c600cf113ded768e1a98a61f214a7ad0f9eb39d38ee8ac9ab4619d56affd87a80ff003008301f3008301f00114a0266e1cccc02cdd59805180f8009bae3008301f01e375c6014603e03c90010a503025001301d00214a0603a00266600201e6eb4c028c06c068c020dd7181118119811981198119811980d80d0991919191929998110008a99981119b8f375c6008604003e6eb8c04cc08007c4c8c8c8c94ccc098cdc4a40086002006266e25200230013300400323300d001375a6028604a0482940c004004894ccc0a40045200013370090011980100118160009980080a929998121980480098079bae3015302202113300a001375a60286044042294088c8cc00400400c894ccc0a400452f5c026464a666050600a00426605800466008008002266008008002605a004605600229445282999810a99981099981099baf0024c103d87a80004a09444ccc084cdd7800a60103d87a80004a0944528099981099baf0044c0103d87a80004a094452819980200900626150d8799fd8799f581c3a4e6757f24d9dddb65c8aef60d0999957b3650453e5e7721fb4fd42ffd8799fd8799fd8799f581c32798960f1b4dc35be90add0d31aed0e3019ea0e47288296a5737e60ffffffff00333003011375a601e603a03860146eb8c004c0740708c090c094c094c094c094c094c094004ccc00403cdd69805180d80d18041bae300e301b01a222323300100100422533302400114c0103d87a800013232533302353330233300900200613300800200514a0266e952000330270024bd70099802002000981400118130009119baf3004301b3004301b0023004301b001223371200260086eacc014c0680088c07c0048ccc00c005221004881002301d301e001222323232533301c3370e90010008a400026eb4c084c068008c068004c94ccc06ccdc3a4004002298103d87a8000132323300100100222533302100114c103d87a800013232323253330223371e014004266e95200033026375000297ae0133006006003375a60460066eb8c084008c094008c08c004dd59810180c801180c800991980080080211299980f0008a6103d87a8000132323232533301f3371e010004266e95200033023374c00297ae0133006006003375660400066eb8c078008c088008c0800048cdd2a40006603466e9520003301a375200297ae03301a4c0103d87a80004bd7019b833370490011bad3001301201148320048c064c068c068c068c068c068c068c06800452818088041919191980080080111299980c0008a501323253330173371e00400c29444cc010010004c070008dd7180d0009bac3002301000a375c6004601e01c4602c602e602e602e602e602e602e602e602e0024602a602c602c602c0026eb0c04c004c04c004c048004c02400cc03c004c03c008c034004c014008526136563253330073370e90000008991919191919191919191919191919191919299980e180f8010a4c2c6eb4c074004c074008dd6980d800980d8011bae30190013019002375c602e002602e0046eb8c054004c054008dd7180980098098011bad30110013011002375c601e002601e0046eb8c034004c01401058c01400c8c014dd5000918019baa0015734aae7555cf2ab9f5740ae855d11",
+      "hash": "0f0650641461b928f9285891e7a8f1d781cec209c106e61c7506497b"
+    }
+  ],
+  "definitions": {
+    "ByteArray": {
+      "dataType": "bytes"
+    },
+    "Int": {
+      "dataType": "integer"
+    },
+    "Void": {
+      "title": "Unit",
+      "description": "The nullary constructor.",
+      "anyOf": [
+        {
+          "dataType": "constructor",
+          "index": 0,
+          "fields": []
+        }
+      ]
+    },
+    "blockalpha/Datum": {
+      "title": "Datum",
+      "anyOf": [
+        {
+          "title": "Datum",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "policyId",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "assetName",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "lock_until",
+              "description": "POSIX time in second, e.g. 1672843961000",
+              "$ref": "#/definitions/Int"
+            },
+            {
+              "title": "bider",
+              "description": "Owner's credentials",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "winter",
+              "description": "Beneficiary's credentials",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "smc_address",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "author",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "price",
+              "$ref": "#/definitions/Int"
+            },
+            {
+              "title": "royalties",
+              "$ref": "#/definitions/Int"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

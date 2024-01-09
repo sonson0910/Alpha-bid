@@ -1,0 +1,14 @@
+name = "blockalpha/alpha-bid"
+version = "0.0.0"
+license = "Apache-2.0"
+description = "Aiken contracts for project 'blockalpha/alpha-bid'"
+
+[repository]
+user = "blockalpha"
+project = "alpha-bid"
+platform = "github"
+
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "1.7.0"
+source = "github"
