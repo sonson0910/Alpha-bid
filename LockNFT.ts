@@ -68,7 +68,7 @@ type Datum = Data.Static<typeof Datum>;
 const Price = 100000000n;
 const lock_until = BigInt(new Date().getTime());
 const royalties = BigInt(parseInt(Price) * 1 / 100);
-const policyId = "f6d61e2b83e15ce8ca7645e21ea4e552cad719d36290d07b50477100";
+const policyId = "e96b0d9a84fd55c57d734d3eff7afea31a71835bfe0f841d1f1ba470";
 const assetName = "44656d61726b6574";
 const contractAddress =
     lucid.utils.getAddressDetails(

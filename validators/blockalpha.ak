@@ -1,14 +1,13 @@
 use aiken/interval.{Finite}
 use aiken/list.{filter, length}
-use aiken/transaction.{ScriptContext, Spend, Transaction, ValidityRange}
+use aiken/transaction.{Output, ScriptContext, Spend, Transaction, ValidityRange}
 use aiken/transaction/credential.{from_verification_key}
-use aiken/transaction/value.{
-  AssetName, PolicyId, lovelace_of, quantity_of,
-}
+use aiken/transaction/value.{AssetName, PolicyId, lovelace_of, quantity_of}
 use alphabid/constants.{demarket_addr, demarket_pct}
 use alphabid/types.{VerificationKeyHash}
 use alphabid/utils.{
-  check_address, check_amount, find_output, must_be_signed_by,
+  check_address, check_amount, find_output, find_output_Winter,
+  must_be_signed_by,
 }
 
 type Datum {
@@ -51,14 +50,19 @@ validator {
           False -> {
             let alphabid_fee: Int = demarket_pct * datum.price / 100
 
-            if
-            !must_start_after(transaction.validity_range, datum.lock_until){
-            
+            if !must_start_after(transaction.validity_range, datum.lock_until) {
               let output_smc =
                 find_output(
                   outputs,
                   datum.price,
                   from_verification_key(datum.smc_address),
+                )
+
+              let output_refund_ada =
+                find_output(
+                  outputs,
+                  datum.price,
+                  from_verification_key(datum.winter),
                 )
 
               when output_smc is {
@@ -67,7 +71,7 @@ validator {
                     output.value,
                     datum.policyId,
                     datum.assetName,
-                  ) == 1
+                  ) == 1 && output_refund_ada != None
 
                 None -> False
               }
@@ -91,9 +95,16 @@ validator {
               let output_alphabid =
                 find_output(outputs, alphabid_fee, demarket_addr())
 
+              let output_Winter =
+                find_output_Winter(
+                  outputs,
+                  datum.policyId,
+                  datum.assetName,
+                  from_verification_key(datum.winter),
+                )
 
               let check_output: Bool =
-                output_author != None && output_alphabid != None && output_bider != None
+                output_author != None && output_alphabid != None && output_bider != None && output_Winter != None
 
               if check_output {
                 if datum.author == datum.bider {

@@ -2,7 +2,7 @@ use aiken/list
 use aiken/transaction.{Output, Transaction}
 // Declare the libraries to use
 use aiken/transaction/credential.{Address}
-use aiken/transaction/value.{lovelace_of}
+use aiken/transaction/value.{AssetName, PolicyId, lovelace_of, quantity_of}
 use alphabid/types.{VerificationKeyHash}
 
 // The function checks the amount
@@ -46,6 +46,23 @@ pub fn find_output(
   list.find(
     outputs,
     fn(output) { check_amount(output, price) && check_address(output, address) },
+  )
+}
+
+pub fn find_output_Winter(
+  outputs: List<Output>,
+  policyId: PolicyId,
+  assetName: AssetName,
+  address: Address,
+) -> Option<Output> {
+  list.find(
+    outputs,
+    fn(output) {
+      quantity_of(output.value, policyId, assetName) == 1 && check_address(
+        output,
+        address,
+      )
+    },
   )
 }
 

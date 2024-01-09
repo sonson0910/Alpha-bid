@@ -1,4 +1,4 @@
-// import modules from libraries
+// Import modules from libraries
 import {
     Blockfrost,
     C,
@@ -8,11 +8,10 @@ import {
     TxHash,
     fromHex,
     toHex,
-    Wallet,
-} from "https://deno.land/x/lucid@0.8.3/mod.ts";
+} from "https://deno.land/x/lucid@0.8.4/mod.ts";
 import * as cbor from "https://deno.land/x/cbor@v1.4.1/index.js";
 
-// Create the lucid api
+// Initialize the lucid API
 const lucid = await Lucid.new(
     new Blockfrost(
         "https://cardano-preview.blockfrost.io/api/v0",
@@ -21,8 +20,9 @@ const lucid = await Lucid.new(
     "Preview",
 );
 
-// Select wallet
-const wallet = lucid.selectWalletFromSeed(await Deno.readTextFile("./owner.seed"));
+// Select buyer wallet
+const wallet = lucid.selectWalletFromSeed(await Deno.readTextFile("./beneficiary.seed"));
+
 
 // Function to read validator from plutus.json file
 async function readValidator(): Promise<SpendingValidator> {
@@ -37,9 +37,10 @@ async function readValidator(): Promise<SpendingValidator> {
 const validator = await readValidator();
 
 // Public key of the seller
-const ownerPublicKeyHash = lucid.utils.getAddressDetails(
+const beneficiaryPublicKeyHash = lucid.utils.getAddressDetails(
     await lucid.wallet.address()
 ).paymentCredential.hash;
+
 
 // Public key of the NFT creator
 const authorPublicKeyHash =
@@ -70,12 +71,19 @@ const Datum = Data.Object({
 
 type Datum = Data.Static<typeof Datum>;
 
-// NFT data to filter out UTxO containing the NFT to be retrieved
-const policyId = "e96b0d9a84fd55c57d734d3eff7afea31a71835bfe0f841d1f1ba470";
+// NFT data to filter out UTxOs containing that NFT
+const policyId = "f6d61e2b83e15ce8ca7645e21ea4e552cad719d36290d07b50477100";
 const assetName = "44656d61726b6574";
+const NFT = policyId + assetName;
+
+const newPrice = 200000000n;
+const newRoyalties = BigInt(parseInt(newPrice) * 1 / 100);
 
 // Get the UTxO datum containing the NFT you want to buy
 let UTOut;
+
+// Retrieve all UTxOs present on the contract address
+const scriptUtxos = await lucid.utxosAt(scriptAddress);
 
 // Filter out UTxOs containing NFTs to purchase
 const utxos = scriptUtxos.filter((utxo) => {
@@ -83,59 +91,76 @@ const utxos = scriptUtxos.filter((utxo) => {
         // Pour datum data into the temp variable of the current UTxO
         const temp = Data.from<Datum>(utxo.datum, Datum);
 
-        // Check to see if UTxO is currently available as an NFT that can be purchased? Check to see if the UTxO actually contains the NFT you want to buy
+        // Check to see if that UTxO actually contains the NFT you want to buy?
         if (temp.policyId === policyId && temp.assetName === assetName) {
-            UTOut = Data.from<Datum>(utxo.datum, Datum); // get the datum of that UTxO into a variable
-            return true; // UTxO is getted
+            UTOut = Data.from<Datum>(utxo.datum, Datum); // Get the data of UTxO and pour it into a variable
+            return true; // That UTxO has been taken
         }
-
-        return false; // That UTxO is not selected 
+        return false; // That UTxO is not selected
     } catch (e) {
         return false; // That UTxO is not selected
     }
 });
 
-// NFTs are for sale
-const NFT = policyId + assetName;
 console.log(UTOut)
-console.log("-----------------------------------------------------")
-console.log(utxos)
+
+const datum = Data.to<Datum>(
+    {
+        policyId: UTOut.policyId,
+        assetName: UTOut.assetName,
+        lock_until: UTOut.lock_until,
+        bider: UTOut.ownerPublicKeyHash,
+        winter: beneficiaryPublicKeyHash,
+        smc_addr: UTOut.contractAddress,
+        author: UTOut.authorPublicKeyHash,
+        price: newPrice,
+        royalties: newRoyalties,
+    },
+    Datum
+);
 
 
-// If no UTxO is selected, the program will be used
+// If no UTxO is selected, the program will stop
 if (utxos.length === 0) {
     console.log("No redeemable utxo found. You need to wait a little longer...");
     Deno.exit(1);
 }
 
-
 // The contract does not use a redeemer, but this is required so it is initialized empty
-const redeemer = Data.empty();
+const redeemer = Data.void();
 
-// function unlocks assets onto the contract
-async function unlock(utxos, NFT, { from, using }): Promise<TxHash> {
+// The function unlocks the assets on the contract
+async function unlock(utxos, UTOut, exchange_fee, datum, NFT, price, { from, using }): Promise<TxHash> {
     const contractAddress = lucid.utils.validatorToAddress(from);
-    let datum = utxos[0].datum;
-    const tx = await lucid // Initialize transaction
+    const currentTime = new Date().getTime();
+    
+    console.log(price);
+    // Initiate transaction
+    const tx = await lucid
         .newTx()
-        .collectFrom(utxos, using) // Consume UTxO (retrieve NFTs on the contract to the wallet)
-        .addSigner(await lucid.wallet.address()) // Add a signature from the seller
-        .payToContract(contractAddress, { inline: datum }, { [NFT]: 1n }) // Send NFT, datum to the contract with the address read above
-        .attachSpendingValidator(from) // Refers to the contract, if confirmed all output will be executed
+        .payToAddress(await lucid.until.credentialToAddress(UTOut.winter), { lovelace: UTOut.price }) // Send money to the seller
+        .collectFrom(utxos, using) // Consume UTxO (Get NFTs on the contract to the wallet)
+        .validFrom(currentTime)
+        .payToContract(contractAddress, { inline: datum }, { [NFT]: 1n, lovelace: price }) // Send NFT, datum to the contract with the address read above
+        .attachSpendingValidator(from) // Refers to the contract, if confirmed, all outputs will be implemented
         .complete();
 
-    // Sign transaction
+    console.log(1)
+
+    // Sign the transaction
     const signedTx = await tx
         .sign()
         .complete();
-    // Send transaction to onchain
+
+    // Send transactions to onchain
     return signedTx.submit();
 }
 
-// Execution of taking back the sold property in the contract
-const txUnlock = await unlock(utxos, NFT, { from: validator, using: redeemer });
+// Execute the asset purchase transaction in the contract
+const txUnlock = await unlock(utxos, UTOut, exchange_fee, datum, NFT, newPrice, { from: validator, using: redeemer });
+console.log(1);
 
-// Time until the transaction is confirmed on the blockchain
+// Waiting time until the transaction is confirmed on the Blockchain
 await lucid.awaitTx(txUnlock);
 
 console.log(`NFT recovered from the contract
