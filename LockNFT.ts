@@ -99,8 +99,9 @@ console.log(NFT)
 async function lock(NFT, { into, datum }): Promise<TxHash> {
     // Read the contract address from the validator variable
     const contractAddress = lucid.utils.validatorToAddress(into);
-    console.log(contractAddress);
+    console.log(datum);
 
+    console.log(contractAddress);
     // Create transaction
     const tx = await lucid
         .newTx()

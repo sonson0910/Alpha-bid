@@ -5,7 +5,7 @@ use aiken/transaction/credential.{from_verification_key}
 use aiken/transaction/value.{
   AssetName, PolicyId, lovelace_of, quantity_of,
 }
-use alphabid/constants.{demarket_addr, demarket_pct, smc_addr}
+use alphabid/constants.{demarket_addr, demarket_pct}
 use alphabid/types.{VerificationKeyHash}
 use alphabid/utils.{
   check_address, check_amount, find_output, must_be_signed_by,
@@ -63,7 +63,7 @@ validator {
 
               when output_smc is {
                 Some(output) ->
-                  lovelace_of(output.value) >= datum.price && smc_addr().payment_credential == output.address.payment_credential && quantity_of(
+                  lovelace_of(output.value) >= datum.price && quantity_of(
                     output.value,
                     datum.policyId,
                     datum.assetName,

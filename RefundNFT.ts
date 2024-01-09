@@ -95,8 +95,12 @@ const utxos = scriptUtxos.filter((utxo) => {
     }
 });
 
-
+// NFTs are for sale
+const NFT = policyId + assetName;
 console.log(UTOut)
+console.log("-----------------------------------------------------")
+console.log(utxos)
+
 
 // If no UTxO is selected, the program will be used
 if (utxos.length === 0) {
@@ -109,11 +113,14 @@ if (utxos.length === 0) {
 const redeemer = Data.empty();
 
 // function unlocks assets onto the contract
-async function unlock(utxos, { from, using }): Promise<TxHash> {
+async function unlock(utxos, NFT, { from, using }): Promise<TxHash> {
+    const contractAddress = lucid.utils.validatorToAddress(from);
+    let datum = utxos[0].datum;
     const tx = await lucid // Initialize transaction
         .newTx()
         .collectFrom(utxos, using) // Consume UTxO (retrieve NFTs on the contract to the wallet)
         .addSigner(await lucid.wallet.address()) // Add a signature from the seller
+        // .payToContract(contractAddress, { inline: datum }, { [NFT]: 1n }) // Send NFT, datum to the contract with the address read above
         .attachSpendingValidator(from) // Refers to the contract, if confirmed all output will be executed
         .complete();
 
@@ -126,7 +133,7 @@ async function unlock(utxos, { from, using }): Promise<TxHash> {
 }
 
 // Execution of taking back the sold property in the contract
-const txUnlock = await unlock(utxos, { from: validator, using: redeemer });
+const txUnlock = await unlock(utxos, NFT, { from: validator, using: redeemer });
 
 // Time until the transaction is confirmed on the blockchain
 await lucid.awaitTx(txUnlock);

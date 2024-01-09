@@ -20,17 +20,5 @@ pub fn demarket_addr() -> Address {
   }
 }
 
-// Payment address of the smart contract
-pub const smc_payment_vkh: VerificationKeyHash =
-  #"600cf113ded768e1a98a61f214a7ad0f9eb39d38ee8ac9ab4619d56a"
-
-// Combine the above 2 addresses into the trading exchange address
-pub fn smc_addr() -> Address {
-  Address {
-    payment_credential: VerificationKeyCredential(smc_payment_vkh),
-    stake_credential: None,
-  }
-}
-
 // Transaction fee percentage
 pub const demarket_pct: Int = 1
