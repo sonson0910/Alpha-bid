@@ -71,8 +71,8 @@ const Datum = Data.Object({
 type Datum = Data.Static<typeof Datum>;
 
 // NFT data to filter out UTxO containing the NFT to be retrieved
-const policyId = "e96b0d9a84fd55c57d734d3eff7afea31a71835bfe0f841d1f1ba470";
-const assetName = "44656d61726b6574";
+const policyId = "dc5e9468d8a32d2680245ee3e5287a52f7a0048f4a4c457ad29ecd86";
+const assetName = "4e677579656e204b68616e68";
 
 // Get the UTxO datum containing the NFT you want to buy
 let UTOut;
@@ -120,7 +120,7 @@ async function unlock(utxos, NFT, { from, using }): Promise<TxHash> {
         .newTx()
         .collectFrom(utxos, using) // Consume UTxO (retrieve NFTs on the contract to the wallet)
         .addSigner(await lucid.wallet.address()) // Add a signature from the seller
-        .payToContract(contractAddress, { inline: datum }, { [NFT]: 1n }) // Send NFT, datum to the contract with the address read above
+        // .payToContract(contractAddress, { inline: datum }, { [NFT]: 1n }) // Send NFT, datum to the contract with the address read above
         .attachSpendingValidator(from) // Refers to the contract, if confirmed all output will be executed
         .complete();
 
