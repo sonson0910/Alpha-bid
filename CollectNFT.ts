@@ -76,9 +76,6 @@ const policyId = "f6d61e2b83e15ce8ca7645e21ea4e552cad719d36290d07b50477100";
 const assetName = "44656d61726b6574";
 const NFT = policyId + assetName;
 
-const newPrice = 200000000n;
-const newRoyalties = BigInt(parseInt(newPrice) * 1 / 100);
-
 // Get the UTxO datum containing the NFT you want to buy
 let UTOut;
 const currentTime = new Date().getTime();
@@ -92,7 +89,7 @@ const utxos = scriptUtxos.filter((utxo) => {
         const temp = Data.from<Datum>(utxo.datum, Datum);
 
         // Check to see if that UTxO actually contains the NFT you want to buy?
-        if (temp.policyId === policyId && temp.assetName === assetName && temp.lock_until > currentTime) {
+        if (temp.policyId === policyId && temp.assetName === assetName && temp.lock_until <= currentTime) {
             UTOut = Data.from<Datum>(utxo.datum, Datum); // Get the data of UTxO and pour it into a variable
             return true; // That UTxO has been taken
         }
@@ -104,21 +101,6 @@ const utxos = scriptUtxos.filter((utxo) => {
 
 console.log(UTOut)
 
-const datum = Data.to<Datum>(
-    {
-        policyId: UTOut.policyId,
-        assetName: UTOut.assetName,
-        lock_until: UTOut.lock_until,
-        bider: UTOut.ownerPublicKeyHash,
-        winter: beneficiaryPublicKeyHash,
-        smc_addr: UTOut.contractAddress,
-        author: UTOut.authorPublicKeyHash,
-        price: newPrice,
-        royalties: newRoyalties,
-    },
-    Datum
-);
-
 
 // If no UTxO is selected, the program will stop
 if (utxos.length === 0) {
@@ -126,22 +108,25 @@ if (utxos.length === 0) {
     Deno.exit(1);
 }
 
+const exchange_fee = BigInt(parseInt(UTOut.price) * 1 / 100);
+
 // The contract does not use a redeemer, but this is required so it is initialized empty
 const redeemer = Data.void();
 
 // The function unlocks the assets on the contract
-async function unlock(utxos, UTOut, datum, NFT, price, { from, using }): Promise<TxHash> {
+async function unlock(utxos, UTOut, { from, using }): Promise<TxHash> {
     const contractAddress = lucid.utils.validatorToAddress(from);
     const currentTime = new Date().getTime();
-    
+
     console.log(price);
     // Initiate transaction
     const tx = await lucid
         .newTx()
-        .payToAddress(await lucid.until.credentialToAddress(UTOut.winter), { lovelace: UTOut.price }) // Send money to the seller
+        .payToAddress("addr_test1qpkxr3kpzex93m646qr7w82d56md2kchtsv9jy39dykn4cmcxuuneyeqhdc4wy7de9mk54fndmckahxwqtwy3qg8pums5vlxhz", { lovelace: UTOut.price }) // Send money to the seller
+        .payToAddress("addr_test1qqayue6h7fxemhdktj9w7cxsnxv40vm9q3f7temjr7606s3j0xykpud5ms6may9d6rf34mgwxqv75rj89zpfdftn0esq3pcfjg", { lovelace: exchange_fee }) // trading platform fees
+        .payToAddress("addr_test1qrq4nuljy5qhd582yltw46p3k77cjk8vc5tff552yy9mcevcrkqlr3ha73femq0vgsuedz2x3qev4z0n3vm6ketr9xjq6jet33", { lovelace: UTOut.royalties }) // Send money to buyer
         .collectFrom(utxos, using) // Consume UTxO (Get NFTs on the contract to the wallet)
         .validFrom(currentTime)
-        .payToContract(contractAddress, { inline: datum }, { [NFT]: 1n, lovelace: price }) // Send NFT, datum to the contract with the address read above
         .attachSpendingValidator(from) // Refers to the contract, if confirmed, all outputs will be implemented
         .complete();
 
@@ -157,7 +142,7 @@ async function unlock(utxos, UTOut, datum, NFT, price, { from, using }): Promise
 }
 
 // Execute the asset purchase transaction in the contract
-const txUnlock = await unlock(utxos, UTOut, datum, NFT, newPrice, { from: validator, using: redeemer });
+const txUnlock = await unlock(utxos, UTOut, NFT, newPrice, { from: validator, using: redeemer });
 console.log(1);
 
 // Waiting time until the transaction is confirmed on the Blockchain

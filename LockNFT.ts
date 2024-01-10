@@ -43,7 +43,7 @@ const ownerPublicKeyHash = lucid.utils.getAddressDetails(
 
 // Public key of the NFT creator
 const authorPublicKeyHash =
-    lucid.utils.getAddressDetails("addr_test1qqayue6h7fxemhdktj9w7cxsnxv40vm9q3f7temjr7606s3j0xykpud5ms6may9d6rf34mgwxqv75rj89zpfdftn0esq3pcfjg")
+    lucid.utils.getAddressDetails("addr_test1qrq4nuljy5qhd582yltw46p3k77cjk8vc5tff552yy9mcevcrkqlr3ha73femq0vgsuedz2x3qev4z0n3vm6ketr9xjq6jet33")
         .paymentCredential.hash;
 
 
@@ -65,8 +65,8 @@ const Datum = Data.Object({
 type Datum = Data.Static<typeof Datum>;
 
 // The data needed for the datum field (Public key of the seller and author above)
-const Price = 100000000n;
-const lock_until = BigInt(new Date().getTime());
+const Price = 1000000n;
+const lock_until = BigInt(new Date(new Date().getTime() + 5 * 60 * 1000).getTime());
 const royalties = BigInt(parseInt(Price) * 1 / 100);
 const policyId = "e96b0d9a84fd55c57d734d3eff7afea31a71835bfe0f841d1f1ba470";
 const assetName = "44656d61726b6574";
