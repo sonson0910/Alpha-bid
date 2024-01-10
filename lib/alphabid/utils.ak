@@ -11,6 +11,11 @@ pub fn check_amount(output: Output, price: Int) -> Bool {
   lovelace_of(output.value) >= price
 }
 
+pub fn check_amount_smc(output: Output, price: Int) -> Bool {
+  // With the amount in the output being greater than the amount passed in from the parameter
+  lovelace_of(output.value) > price
+}
+
 // Function to check address
 pub fn check_address(output: Output, address: Address) -> Bool {
   // Check the two payment addresses from the address in the output and the address passed in from the parameter
@@ -39,6 +44,17 @@ pub fn check_none(
 
 // Search and return output that satisfies the amount in the output must be greater than the amount in the input parameter and the payment address in the output address must be the same as the payment address in the address from the parameter transmisson in
 pub fn find_output(
+  outputs: List<Output>,
+  price: Int,
+  address: Address,
+) -> Option<Output> {
+  list.find(
+    outputs,
+    fn(output) { check_amount(output, price) && check_address(output, address) },
+  )
+}
+
+pub fn find_output_smc(
   outputs: List<Output>,
   price: Int,
   address: Address,

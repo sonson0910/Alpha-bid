@@ -6,7 +6,7 @@ use aiken/transaction/value.{AssetName, PolicyId, lovelace_of, quantity_of}
 use alphabid/constants.{demarket_addr, demarket_pct}
 use alphabid/types.{VerificationKeyHash}
 use alphabid/utils.{
-  check_address, check_amount, find_output, find_output_Winter,
+  check_address, check_amount, find_output, find_output_smc, find_output_Winter,
   must_be_signed_by,
 }
 
@@ -52,7 +52,7 @@ validator {
 
             if !must_start_after(transaction.validity_range, datum.lock_until) {
               let output_smc =
-                find_output(
+                find_output_smc(
                   outputs,
                   datum.price,
                   from_verification_key(datum.smc_address),

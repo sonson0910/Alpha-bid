@@ -111,7 +111,6 @@ async function unlock(utxos, UTOut, { from, using }): Promise<TxHash> {
     const payment_bider = { type: "Key", hash: UTOut.bider }
     const payment_author = { type: "Key", hash: UTOut.author }
 
-
     console.log(price);
     // Initiate transaction
     const tx = await lucid
